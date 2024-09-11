@@ -37,8 +37,8 @@ func main() {
 
 	records, err := provider.GetRecords(ctx, zone)
 	if err != nil {
-        fmt.Printf("Error: %s", err)
-        return
+		fmt.Printf("Error: %s", err)
+		return
 	}
 
 	fmt.Println(records)
@@ -46,6 +46,6 @@ func main() {
 
 ```
 
-See also: [provider_test.go](https://github.com/libdns/selectelv2/blob/master/provider_test.go)
+See also: [provider_test.go](https://github.com/libdns/selectel/blob/master/provider_test.go)
 
 Always yours [@jjazzme](https://github.com/jjazzme)
