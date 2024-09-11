@@ -1,6 +1,6 @@
 # Selectel DNS v2 for [libdns](https://github.com/libdns/libdns)
 
-[![Go Reference](https://pkg.go.dev/badge/test.svg)](https://pkg.go.dev/github.com/libdns/selectelv2)
+[![Go Reference](https://pkg.go.dev/badge/test.svg)](https://pkg.go.dev/github.com/libdns/selectel)
 
 This package implements the [libdns interfaces](https://github.com/libdns/libdns) for [Selectel DNS v2 API](https://developers.selectel.ru/docs/cloud-services/dns_api/dns_api_actual/), allowing you to manage DNS records.
 
@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/libdns/libdns/selectelv2"
+	"github.com/libdns/libdns/selectel"
 )
 
 func main() {
