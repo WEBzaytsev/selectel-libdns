@@ -134,6 +134,9 @@ func mapRecordsToLibds(zone string, records []Record) []libdns.Record {
 func libdnsToRecord(zone string, libdnsRecord libdns.Record) Record {
     // for TTL
     ttl := libdnsRecord.TTL.Seconds()
+    if ttl == 0 {
+        ttl = 60
+    }
 
     // for Value
 	recVals := strings.Split(libdnsRecord.Value, "\n")
