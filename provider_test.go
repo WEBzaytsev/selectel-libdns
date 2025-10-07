@@ -9,7 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/libdns/libdns"
-	"github.com/libdns/selectel"
+	selectel "github.com/WEBzaytsev/selectel-libdns"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,44 +36,44 @@ func setup() {
 	}
 	zone = os.Getenv("SELECTEL_ZONE")
 	ctx = context.Background()
-	sourceRecords = []libdns.Record{
-		{ // 0
-			Type:  "A",
-			Name:  fmt.Sprintf("test1.%s.", os.Getenv("SELECTEL_ZONE")),
-			Value: "1.2.3.1",
-			TTL:   61 * time.Second,
-		},
-		{ // 1
-			Type:  "A",
-			Name:  fmt.Sprintf("test2.%s.", os.Getenv("SELECTEL_ZONE")),
-			Value: "1.2.3.2",
-			TTL:   61 * time.Second,
-		},
-		{ // 2
-			Type:  "A",
-			Name:  "test3",
-			Value: "1.2.3.3",
-			TTL:   61 * time.Second,
-		},
-		{ // 3
-			Type: "TXT",
-			Name: "test1",
-			Value: "test1 txt",
-			TTL: 61 * time.Second,
-		},
-		{ // 4
-			Type: "TXT",
-			Name: fmt.Sprintf("test2.%s.", os.Getenv("SELECTEL_ZONE")),
-			Value: "test2 txt",
-			TTL: 61 * time.Second,
-		},
-		{ // 5
-			Type: "TXT",
-			Name: "test3",
-			Value: "test3 txt",
-			TTL: 61 * time.Second,
-		},
-	}
+    sourceRecords = []libdns.Record{
+        libdns.RR{ // 0
+            Type: "A",
+            Name: fmt.Sprintf("test1.%s.", os.Getenv("SELECTEL_ZONE")),
+            Data: "1.2.3.1",
+            TTL:  61 * time.Second,
+        },
+        libdns.RR{ // 1
+            Type: "A",
+            Name: fmt.Sprintf("test2.%s.", os.Getenv("SELECTEL_ZONE")),
+            Data: "1.2.3.2",
+            TTL:  61 * time.Second,
+        },
+        libdns.RR{ // 2
+            Type: "A",
+            Name: "test3",
+            Data: "1.2.3.3",
+            TTL:  61 * time.Second,
+        },
+        libdns.RR{ // 3
+            Type: "TXT",
+            Name: "test1",
+            Data: "test1 txt",
+            TTL:  61 * time.Second,
+        },
+        libdns.RR{ // 4
+            Type: "TXT",
+            Name: fmt.Sprintf("test2.%s.", os.Getenv("SELECTEL_ZONE")),
+            Data: "test2 txt",
+            TTL:  61 * time.Second,
+        },
+        libdns.RR{ // 5
+            Type: "TXT",
+            Name: "test3",
+            Data: "test3 txt",
+            TTL:  61 * time.Second,
+        },
+    }
 }
 
 // testing GetRecord
@@ -101,13 +101,13 @@ func TestProvider_AppendRecords(t *testing.T) {
 		sourceRecords[4],
 	}
 
-	records, err := provider.AppendRecords(ctx, zone, newRecords)
+    records, err := provider.AppendRecords(ctx, zone, newRecords)
 	addedRecords = records
 	assert.NoError(t, err)
 	assert.NotNil(t, records)
 	assert.Equal(t, 4, len(records))
-	assert.Equal(t, "A", records[0].Type)
-	assert.Equal(t, "TXT", records[2].Type)
+    assert.Equal(t, "A", records[0].RR().Type)
+    assert.Equal(t, "TXT", records[2].RR().Type)
 	t.Logf("AppendRecords test passed. Append count: %d", len(records))
 }
 
@@ -115,38 +115,38 @@ func TestProvider_AppendRecords(t *testing.T) {
 func TestProvider_SetRecords(t *testing.T) {
 	setup()
 
-	second := addedRecords[1]
-	second.TTL = 62 * time.Second
+    second := addedRecords[1].RR()
+    second.TTL = 62 * time.Second
 
-	fourth := addedRecords[3]
-	fourth.Value = "test 1 txt with additional line\nsecondline"
+    fourth := addedRecords[3].RR()
+    fourth.Data = "test 1 txt with additional line\nsecondline"
 
-	fifth := sourceRecords[4]
-	fifth.Value = "test 2 txt changed"
+    fifth := sourceRecords[4].RR()
+    fifth.Data = "test 2 txt changed"
 
 	// entries to set
-	setRecords := []libdns.Record{
-		{ // record from Append without id
-			Type:  "A",
-			Name:  "test1.", // <---- without zone, but with .
-			Value: "1.2.3.1",
-			TTL:   62 * time.Second, // <---- changed
-		},
-		second, // record from Append, but new ttl = 62
-		sourceRecords[2], // new record
-		fourth, // changed value. 2 lines
-		fifth,
-		sourceRecords[5],
-	}
+    setRecords := []libdns.Record{
+        libdns.RR{ // record from Append without id
+            Type: "A",
+            Name: "test1.", // <---- without zone, but with .
+            Data: "1.2.3.1",
+            TTL:  62 * time.Second, // <---- changed
+        },
+        second,            // record from Append, but new ttl = 62
+        sourceRecords[2],  // new record
+        fourth,            // changed value. 2 lines
+        fifth,
+        sourceRecords[5],
+    }
 
 	records, err := provider.SetRecords(ctx, zone, setRecords)
 	addedRecords = records
 	assert.NoError(t, err)
 	assert.NotNil(t, records)
 	assert.Equal(t, 6, len(records))
-	assert.Equal(t, "A", records[2].Type)
-	assert.Equal(t, "1.2.3.2", records[1].Value)
-	assert.Equal(t, 62, int(records[0].TTL.Seconds()))
+    assert.Equal(t, "A", records[2].RR().Type)
+    assert.Equal(t, "1.2.3.2", records[1].RR().Data)
+    assert.Equal(t, 62, int(records[0].RR().TTL.Seconds()))
 	t.Logf("SetRecords test passed. Set count: %d", len(records))
 }
 
@@ -155,7 +155,7 @@ func TestProvider_DeleteRecords(t *testing.T) {
 	setup()
 
 	// entries to delete
-	delRecords := []libdns.Record{
+    delRecords := []libdns.Record{
 		addedRecords[0],
 		sourceRecords[1],
 		addedRecords[2],
@@ -168,8 +168,8 @@ func TestProvider_DeleteRecords(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, records)
 	assert.Equal(t, 6, len(records))
-	assert.Equal(t, "A", records[0].Type)
-	assert.Equal(t, "1.2.3.2", records[1].Value)
-	assert.Equal(t, 61, int(records[2].TTL.Seconds()))
+    assert.Equal(t, "A", records[0].RR().Type)
+    assert.Equal(t, "1.2.3.2", records[1].RR().Data)
+    assert.Equal(t, 61, int(records[2].RR().TTL.Seconds()))
 	t.Logf("DeleteRecords test passed. Delete count: %d", len(records))
 }

@@ -107,8 +107,9 @@ func (p *Provider) setRecords(ctx context.Context, zone string, zoneId string, r
 		id, exists := idFromRecordsByLibRecord(zoneRecords, libRecord, zone)
 		if exists {
 			// if zone recordset contain record
-			libRecord.ID = id
-			record, err := p.updateSelectelRecord(ctx, zone, zoneId, libdnsToRecord(zone, libRecord))
+			upd := libdnsToRecord(zone, libRecord)
+			upd.ID = id
+			record, err := p.updateSelectelRecord(ctx, zone, zoneId, upd)
 			if err != nil {
 				resultErr = err
 			} else {
@@ -140,16 +141,16 @@ func (p *Provider) deleteRecords(ctx context.Context, zone string, zoneId string
 		// check for already exists
 		id, exists := idFromRecordsByLibRecord(zoneRecords, libRecord, zone)
 		if exists {
-			libRecord.ID = id
 			// delete recordset record request to api
-			_, err := p.makeApiRequest(ctx, httpMethods.delete, "/zones/%s/rrset/%s", nil, zoneId, libRecord.ID)
+			_, err := p.makeApiRequest(ctx, httpMethods.delete, "/zones/%s/rrset/%s", nil, zoneId, id)
 			if err != nil {
 				resultErr = err
 			} else {
 				resultRecords = append(resultRecords, libRecord)
 			}
 		} else {
-			resultErr = fmt.Errorf("no %s record %s for delete", libRecord.Type, libRecord.Name)
+			rr := libRecord.RR()
+			resultErr = fmt.Errorf("no %s record %s for delete", rr.Type, rr.Name)
 		}
 	}
 	return resultRecords, resultErr

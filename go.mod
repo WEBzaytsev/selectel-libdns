@@ -1,8 +1,8 @@
-module github.com/libdns/selectel
+module github.com/WEBzaytsev/selectel-libdns
 
-go 1.18
+go 1.24
 
-require github.com/libdns/libdns v0.2.2
+require github.com/libdns/libdns v1.1.1
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

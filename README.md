@@ -1,6 +1,6 @@
 # Selectel DNS v2 for [libdns](https://github.com/libdns/libdns)
 
-[![Go Reference](https://pkg.go.dev/badge/test.svg)](https://pkg.go.dev/github.com/libdns/selectel)
+[![Go Reference](https://pkg.go.dev/badge/test.svg)](https://pkg.go.dev/github.com/WEBzaytsev/selectel-libdns)
 
 This package implements the [libdns interfaces](https://github.com/libdns/libdns) for [Selectel DNS v2 API](https://developers.selectel.ru/docs/cloud-services/dns_api/dns_api_actual/), allowing you to manage DNS records.
 
@@ -20,20 +20,20 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/libdns/libdns/selectel"
+	selectel "github.com/WEBzaytsev/selectel-libdns"
 )
 
 func main() {
+	ctx := context.Background()
+	zone := os.Getenv("SELECTEL_ZONE")
 
-	provider = selectel.Provider{
+	provider := selectel.Provider{
 		User:        os.Getenv("SELECTEL_USER"),
 		Password:    os.Getenv("SELECTEL_PASSWORD"),
 		AccountId:   os.Getenv("SELECTEL_ACCOUNT_ID"),
 		ProjectName: os.Getenv("SELECTEL_PROJECT_NAME"),
 		ZonesCache:  make(map[string]string),
 	}
-	zone = os.Getenv("SELECTEL_ZONE")
-	ctx = context.Background()
 
 	records, err := provider.GetRecords(ctx, zone)
 	if err != nil {
@@ -46,6 +46,13 @@ func main() {
 
 ```
 
-See also: [provider_test.go](https://github.com/libdns/selectel/blob/master/provider_test.go)
+See also: [provider_test.go](https://github.com/WEBzaytsev/selectel-libdns/blob/main/provider_test.go)
 
-Always yours [@jjazzme](https://github.com/jjazzme)
+## Fork & Credits
+
+This repository is a fork of:
+
+- [jjazzme/selectelv2-libdns](https://github.com/jjazzme/selectelv2-libdns)
+- [libdns/selectel](https://github.com/libdns/selectel)
+
+Special thanks to [@jjazzme](https://github.com/jjazzme) for the original work and idea.

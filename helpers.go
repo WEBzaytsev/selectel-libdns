@@ -95,29 +95,28 @@ func (p *Provider) getZoneID(ctx context.Context, zone string) (string, error) {
 
 // Convert Record to libdns.Record
 func recordToLibdns(zone string, record Record) libdns.Record {
-    // for TTL
     ttlDuration := time.Duration(record.TTL) * time.Second
 
-    // for Value
-    var valueString string
-    for _, recVal := range record.Value {
-        valueString += recVal.Value + "\n"
+    var dataBuilder strings.Builder
+    for i, recVal := range record.Value {
+        if i > 0 {
+            dataBuilder.WriteString("\n")
+        }
+        if record.Type == "TXT" {
+            dataBuilder.WriteString(strings.ReplaceAll(recVal.Value, "\"", ""))
+        } else {
+            dataBuilder.WriteString(recVal.Value)
+        }
     }
-    // remove last \n
-    if len(valueString) > 0 {
-        valueString = valueString[:len(valueString)-1]
-    }
-	// for TXT raplace all \"
-	if record.Type == "TXT" {
-		valueString = strings.ReplaceAll(valueString, "\"", "")
-	}
 
-    return libdns.Record{
-        ID:       record.ID,
-        Type:     record.Type,
-        Name:     nameNormalizer(record.Name, zone),
-        Value:    valueString,
-        TTL:      ttlDuration,
+    fqdn := nameNormalizer(record.Name, zone)
+    nameRel := libdns.RelativeName(fqdn, zone)
+
+    return libdns.RR{
+        Name: nameRel,
+        TTL:  ttlDuration,
+        Type: record.Type,
+        Data: dataBuilder.String(),
     }
 }
 
@@ -132,31 +131,31 @@ func mapRecordsToLibds(zone string, records []Record) []libdns.Record {
 
 // Convert Record to libdns.Record
 func libdnsToRecord(zone string, libdnsRecord libdns.Record) Record {
-    // for TTL
-    ttl := libdnsRecord.TTL.Seconds()
+    rr := libdnsRecord.RR()
+
+    ttl := rr.TTL.Seconds()
     if ttl == 0 {
         ttl = 60
     }
 
-    // for Value
-	recVals := strings.Split(libdnsRecord.Value, "\n")
+    recVals := strings.Split(rr.Data, "\n")
     valueRV := make([]RValue, len(recVals))
     for i, recVal := range recVals {
-		if libdnsRecord.Type == "TXT" {
-			// if TXT, add to any preffix&suffix \"
-			recVal = strings.Trim(recVal, "\"")
-			valueRV[i] = RValue{Value: "\"" + recVal + "\""}
-		} else {
-			valueRV[i] = RValue{Value: recVal}
-		}
+        if rr.Type == "TXT" {
+            recVal = strings.Trim(recVal, "\"")
+            valueRV[i] = RValue{Value: "\"" + recVal + "\""}
+        } else {
+            valueRV[i] = RValue{Value: recVal}
+        }
     }
 
+    nameFQDN := nameNormalizer(rr.Name, zone)
+
     return Record{
-        ID:       libdnsRecord.ID,
-        Type:     libdnsRecord.Type,
-        Name:     nameNormalizer(libdnsRecord.Name, zone),
-        Value:    valueRV,
-        TTL:      int(ttl),
+        Type:  rr.Type,
+        Name:  nameFQDN,
+        Value: valueRV,
+        TTL:   int(ttl),
     }
 }
 
@@ -205,10 +204,11 @@ func nameNormalizer(name string, zone string) string {
 
 // Check if an element with Id == id || (Name == name  && Type == type) exists 
 func idFromRecordsByLibRecord(records []Record, libRecord libdns.Record, zone string) (string, bool) {
-	nameNorm := nameNormalizer(libRecord.Name, zone)
+    rr := libRecord.RR()
+    nameNorm := nameNormalizer(rr.Name, zone)
 	for _, record := range records {
 		recordNameNorm := nameNormalizer(record.Name, zone)
-		if libRecord.ID == record.ID || (recordNameNorm == nameNorm && libRecord.Type == record.Type) {
+        if recordNameNorm == nameNorm && rr.Type == record.Type {
 			return record.ID ,true // Element found
 		}
 	}
