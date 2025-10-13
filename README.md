@@ -28,11 +28,12 @@ func main() {
 	zone := os.Getenv("SELECTEL_ZONE")
 
 	provider := selectel.Provider{
-		User:        os.Getenv("SELECTEL_USER"),
-		Password:    os.Getenv("SELECTEL_PASSWORD"),
-		AccountId:   os.Getenv("SELECTEL_ACCOUNT_ID"),
-		ProjectName: os.Getenv("SELECTEL_PROJECT_NAME"),
-		ZonesCache:  make(map[string]string),
+		User:               os.Getenv("SELECTEL_USER"),
+		Password:           os.Getenv("SELECTEL_PASSWORD"),
+		AccountId:          os.Getenv("SELECTEL_ACCOUNT_ID"),
+		ProjectName:        os.Getenv("SELECTEL_PROJECT_NAME"),
+		EnableDebugLogging: true, // Enable detailed logging
+		ZonesCache:         make(map[string]string),
 	}
 
 	records, err := provider.GetRecords(ctx, zone)
